@@ -1,9 +1,8 @@
 // Import modul yang dibutuhkan
 import express from 'express';
 import axios from 'axios';
-import { load } from 'cheerio';  // Menggunakan named import untuk cheerio
+import { load } from 'cheerio'; 
 import cors from 'cors';
-// Inisialisasi aplikasi Express
 const app = express();
 const PORT = 5000;
 
