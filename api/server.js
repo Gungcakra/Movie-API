@@ -4,10 +4,10 @@ import axios from 'axios';
 import { load } from 'cheerio'; 
 import cors from 'cors';
 const app = express();
-const PORT = 5000;
-
-app.use(cors());
-
+const PORT = 3000;
+app.use(cors({
+    origin:"http://localhost:3000"
+}));
 // MOVIE NEW
 app.get('/api/movie-new', async (req, res) => {
     try {
@@ -81,46 +81,43 @@ app.get('/api/movie-popular', async (req, res) => {
 // MOVIE POPULAR
 
 // MOVIE HORROR
-// Function to create a delay
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
 app.get('/api/movie-horror', async (req, res) => {
     const url = 'https://tv3.lk21official.my/genre/horror/';
 
-    // Introduce a delay before making the request
-    await sleep(2000); // Delay for 2 seconds
-
     try {
-        const { data } = await axios.get(url, {
-            headers: {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.5112.81 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'en-US,en;q=0.5',
-                'Connection': 'keep-alive'
-            }
-        });
-        
-        const $ = cheerio.load(data);
-        const movies = [];
-        
+        // Fetch the HTML from the URL
+        const { data } = await axios.get(url);
+        const $ = load(data);
+
+        // Scrape horror movie details
+        const horrorMovies = [];
+
+        // Loop through each movie element
         $('div.col-lg-2.col-sm-3.col-xs-4.page-0.infscroll-item').each((index, element) => {
             const title = $(element).find('h1.grid-title a').text().trim();
             const poster = $(element).find('img').attr('src');
             const rating = $(element).find('div.rating').text().trim();
             const movieLink = $(element).find('h1.grid-title a').attr('href');
 
+            // Prepend "https://" to the poster URL
             const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
-            movies.push({ title, poster: posterUrl, rating, link: movieLink });
+
+            // Push the movie details to the array
+            horrorMovies.push({
+                title,
+                poster: posterUrl,
+                rating,
+                link: movieLink,
+            });
         });
 
-        res.json(movies);
+        // Send the movie details as the response
+        res.json(horrorMovies);
     } catch (error) {
-        console.error('Error fetching movie data:', error.message);
-        res.status(500).json({ error: 'Failed to fetch horror movie details', details: error.message });
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch horror movie details' });
     }
 });
-
-
 // MOVIE HORROR
 
 // MOVIE DETAIL
