@@ -85,39 +85,31 @@ app.get('/api/movie-horror', async (req, res) => {
     const url = 'https://tv3.lk21official.my/genre/horror/';
 
     try {
-        // Fetch the HTML from the URL
-        const { data } = await axios.get(url);
-        const $ = load(data);
-
-        // Scrape horror movie details
-        const horrorMovies = [];
-
-        // Loop through each movie element
+        const { data } = await axios.get(url, {
+            headers: {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36'
+            }
+        });
+        const $ = cheerio.load(data);
+        
+        const movies = [];
         $('div.col-lg-2.col-sm-3.col-xs-4.page-0.infscroll-item').each((index, element) => {
             const title = $(element).find('h1.grid-title a').text().trim();
             const poster = $(element).find('img').attr('src');
             const rating = $(element).find('div.rating').text().trim();
             const movieLink = $(element).find('h1.grid-title a').attr('href');
 
-            // Prepend "https://" to the poster URL
             const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
-
-            // Push the movie details to the array
-            horrorMovies.push({
-                title,
-                poster: posterUrl,
-                rating,
-                link: movieLink,
-            });
+            movies.push({ title, poster: posterUrl, rating, link: movieLink });
         });
 
-        // Send the movie details as the response
-        res.json(horrorMovies);
+        res.json(movies);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch horror movie details' });
+        console.error('Error fetching movie data:', error.message);
+        res.status(500).json({ error: 'Failed to fetch horror movie details', details: error.message });
     }
 });
+
 // MOVIE HORROR
 
 // MOVIE DETAIL
