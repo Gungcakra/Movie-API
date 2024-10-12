@@ -3,63 +3,11 @@ import express from 'express';
 import axios from 'axios';
 import { load } from 'cheerio';  // Menggunakan named import untuk cheerio
 import cors from 'cors';
-import puppeteer from 'puppeteer';
 // Inisialisasi aplikasi Express
 const app = express();
 const PORT = 5000;
 
 app.use(cors());
-app.get('/api/test', async (req, res) => {
-    try {
-        // Meluncurkan browser dengan Puppeteer
-        const browser = await puppeteer.launch();
-        const page = await browser.newPage();
-
-        // Mengunjungi halaman
-        await page.goto('https://shinigami05.com/', {
-            waitUntil: 'networkidle2' // Menunggu hingga jaringan stabil
-        });
-
-        // Mengambil data yang diinginkan
-        const results = await page.evaluate(() => {
-            const items = [];
-            const elements = document.querySelectorAll('.col-6.col-sm-6.col-md-6.col-xl-3');
-
-            elements.forEach(element => {
-                const title = element.querySelector('.series-title')?.innerText.trim();
-                const link = element.querySelector('.series-link')?.href;
-                const image = element.querySelector('.thumb-img')?.src;
-                const chapters = [];
-
-                element.querySelectorAll('.series-chapter-item').forEach(chapterElement => {
-                    const chapterTitle = chapterElement.querySelector('.series-badge')?.innerText.trim();
-                    const chapterLink = chapterElement.querySelector('a')?.href;
-                    const chapterTime = chapterElement.querySelector('.series-time')?.innerText.trim();
-                    chapters.push({ chapterTitle, chapterLink, chapterTime });
-                });
-
-                items.push({
-                    title,
-                    link,
-                    image,
-                    chapters
-                });
-            });
-
-            return items;
-        });
-
-        // Menutup browser
-        await browser.close();
-
-        // Mengirim hasil sebagai respons
-        res.json(results);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Error fetching data' });
-    }
-});
-
 
 // MOVIE NEW
 app.get('/api/movie-new', async (req, res) => {
@@ -132,6 +80,97 @@ app.get('/api/movie-popular', async (req, res) => {
     }
 });
 // MOVIE POPULAR
+
+// MOVIE HORROR
+app.get('/api/movie-horror', async (req, res) => {
+    const url = 'https://tv3.lk21official.my/genre/horror/';
+
+    try {
+        // Fetch the HTML from the URL
+        const { data } = await axios.get(url);
+        const $ = load(data);
+
+        // Scrape horror movie details
+        const horrorMovies = [];
+
+        // Loop through each movie element
+        $('div.col-lg-2.col-sm-3.col-xs-4.page-0.infscroll-item').each((index, element) => {
+            const title = $(element).find('h1.grid-title a').text().trim();
+            const poster = $(element).find('img').attr('src');
+            const rating = $(element).find('div.rating').text().trim();
+            const movieLink = $(element).find('h1.grid-title a').attr('href');
+
+            // Prepend "https://" to the poster URL
+            const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
+
+            // Push the movie details to the array
+            horrorMovies.push({
+                title,
+                poster: posterUrl,
+                rating,
+                link: movieLink,
+            });
+        });
+
+        // Send the movie details as the response
+        res.json(horrorMovies);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch horror movie details' });
+    }
+});
+// MOVIE HORROR
+
+// MOVIE DETAIL
+app.get('/api/movie-details/:movieId', async (req, res) => {
+    const { movieId } = req.params;
+    const url = `https://tv3.lk21official.my/${movieId}`;
+
+    try {
+        // Mengambil halaman
+        const { data } = await axios.get(url);
+        const $ = load(data);
+
+        // Mengambil data yang diperlukan
+        const title = $('header.post-header h2').text();
+        const iframeSrc = $('div.embed iframe').attr('src');
+        const poster = $('div.content-poster img').attr('src');
+        const quality = $('div.content h2').eq(0).next().text();
+        const country = $('div.content h2').eq(1).next().text();
+        const stars = $('div.content h2').eq(2).next().text();
+        const director = $('div.content h2').eq(3).next().text();
+        const genres = $('div.content h2').eq(4).next().text();
+        const imdbRating = $('div.content h2').eq(5).next().text();
+        const released = $('div.content h2').eq(6).next().text();
+        const translator = $('div.content h2').eq(7).next().text();
+        const synopsis = $('blockquote strong').next().text().trim();
+        const videoUrl = $('iframe').attr('src');
+        const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
+        const duration = $('div.content h2').eq(10).next().text();
+
+        // Mengembalikan data dalam format JSON
+        res.json({
+            title,
+            iframeSrc,
+            posterUrl,
+            videoUrl,
+            quality,
+            country,
+            stars,
+            director,
+            genres,
+            imdbRating,
+            released,
+            translator,
+            synopsis,
+            duration
+        });
+    } catch (error) {
+        console.error('Error fetching movie details:', error);
+        res.status(500).json({ error: 'Failed to fetch movie details' });
+    }
+});
+// MOVIE DETAIL
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
