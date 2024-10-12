@@ -81,8 +81,14 @@ app.get('/api/movie-popular', async (req, res) => {
 // MOVIE POPULAR
 
 // MOVIE HORROR
+// Function to create a delay
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
 app.get('/api/movie-horror', async (req, res) => {
     const url = 'https://tv3.lk21official.my/genre/horror/';
+
+    // Introduce a delay before making the request
+    await sleep(2000); // Delay for 2 seconds
 
     try {
         const { data } = await axios.get(url, {
@@ -93,9 +99,10 @@ app.get('/api/movie-horror', async (req, res) => {
                 'Connection': 'keep-alive'
             }
         });
-        const $ = cheerio.load(data);
         
+        const $ = cheerio.load(data);
         const movies = [];
+        
         $('div.col-lg-2.col-sm-3.col-xs-4.page-0.infscroll-item').each((index, element) => {
             const title = $(element).find('h1.grid-title a').text().trim();
             const poster = $(element).find('img').attr('src');
@@ -112,6 +119,7 @@ app.get('/api/movie-horror', async (req, res) => {
         res.status(500).json({ error: 'Failed to fetch horror movie details', details: error.message });
     }
 });
+
 
 // MOVIE HORROR
 
