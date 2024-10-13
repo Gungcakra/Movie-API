@@ -174,6 +174,52 @@ app.get('/api/movie-horror', async (req, res) => {
   });
 // MOVIE HORROR
 
+// MOVIE DRAMA
+app.get('/api/movie-drama', async (req, res) => {
+    try {
+      const url = 'https://amsterdam-ftv-blog.com/drama/';
+      const { data } = await axios.get(url);
+      const $ = load(data);
+  
+      const movies = [];
+  
+      // Lakukan scraping pada elemen article dengan ID tertentu
+      $('article.item-infinite').each((index, element) => {
+        const title = $(element).find('h2.entry-title a').text();
+        const link = $(element).find('h2.entry-title a').attr('href');
+        const image = $(element).find('img').attr('src');
+        const rating = $(element).find('.gmr-rating-item').text().trim();
+        const duration = $(element).find('.gmr-duration-item').text().trim();
+        const quality = $(element).find('.gmr-quality-item a').text().trim();
+        const releaseDate = $(element).find('time').attr('datetime');
+        const categories = [];
+  
+        $(element)
+          .find('.gmr-movie-on a')
+          .each((i, el) => {
+            categories.push($(el).text().trim());
+          });
+  
+        movies.push({
+          title,
+          link,
+          image,
+          rating,
+          duration,
+          quality,
+          releaseDate,
+          categories,
+        });
+      });
+  
+      res.json(movies);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
+    }
+  });
+// MOVIE DRAMA
+
 // MOVIE DETAIL
 app.get('/api/movie-details/:movieId', async (req, res) => {
     const { movieId } = req.params;
