@@ -8,168 +8,226 @@ const PORT = 3000;
 app.use(cors({
     origin:"http://localhost:3000"
 }));
+
+
+app.get('/api/movie-list', async (req, res) => {
+  try {
+    // Ambil konten dari URL
+    const { data } = await axios.get('https://amsterdam-ftv-blog.com/');
+    
+    // Muat HTML dengan cheerio
+    const $ = load(data);
+    
+    // Seleksi elemen berdasarkan kelas dan atribut yang diberikan
+    const movies = [];
+    $('div.col-md-125[itemscope="itemscope"]').each((index, element) => {
+      const title = $(element).find('h2.entry-title a').text();
+      const permalink = $(element).find('h2.entry-title a').attr('href');
+      const imageUrl = $(element).find('img').attr('src');
+      const rating = $(element).find('div.gmr-rating-item').text().trim();
+      const releaseDate = $(element).find('time').attr('datetime');
+      const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text();
+      const quality = $(element).find('div.gmr-quality-item a').text();
+
+      // Push data ke array movies
+      movies.push({
+        title,
+        permalink,
+        imageUrl,
+        rating,
+        releaseDate,
+        director,
+        quality
+      });
+    });
+
+    // Kirim data sebagai response JSON
+    res.json({ movies });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Error occurred while fetching data');
+  }
+});
+
+
 // MOVIE NEW
 app.get('/api/movie-new', async (req, res) => {
     try {
-        const { data } = await axios.get('https://tv3.lk21official.my/');
+      const url = 'https://amsterdam-ftv-blog.com/?s=&search=advanced&post_type=&index=&orderby=&genre=&movieyear=2024&country=&quality=';
+      const { data } = await axios.get(url);
+      
+      const $ = load(data);
+      const movieList = [];
+  
+      // Looping untuk mengambil elemen <article> dengan id="post-319833"
+      $('article.item-infinite').each((i, el) => {
+        const title = $(el).find('h2.entry-title a').text().trim();
+        const link = $(el).find('h2.entry-title a').attr('href');
+        const image = $(el).find('div.content-thumbnail a img').attr('src');
+        const rating = $(el).find('div.gmr-rating-item').text().trim();
+        const duration = $(el).find('div.gmr-duration-item').text().trim();
+        const genre = $(el).find('div.gmr-movie-on').text().trim();
+        const releaseDate = $(el).find('time[itemprop="dateCreated"]').attr('datetime');
+        const trailer = $(el).find('a.gmr-trailer-popup').attr('href');
         
-        const $ = load(data);
-        
-        let movies = [];
-        
-        $('.col-lg-2.col-sm-3.col-xs-4.item').each((index, element) => {
-            const title = $(element).find('.caption').text().trim();
-            let image = $(element).find('img').attr('src');
-            const rating = $(element).find('.rating').text().trim();
-            const movieLink = $(element).find('.item-overlay a').attr('href');
-
-            if (image && image.startsWith('//')) {
-                image = `https:${image}`;
-            }
-
-            movies.push({
-                title,
-                image,
-                rating,
-                movieLink
-            });
+        // Pushing data ke array movieList
+        movieList.push({
+          title,
+          link,
+          image,
+          rating,
+          duration,
+          genre,
+          releaseDate,
+          trailer
         });
-
-        res.json(movies);
-
+      });
+  
+      res.json(movieList);
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error occurred while scraping data.');
+      console.error(error);
+      res.status(500).json({ message: 'Error fetching movie data' });
     }
-});
+  });
+  
 // MOVIE NEW
 
 // MOVIE POPULAR
 app.get('/api/movie-popular', async (req, res) => {
     try {
-        const { data } = await axios.get('https://tv3.lk21official.my/');
-        const $ = load(data);
-        let popularMovies = [];
-        
-        $('.col-lg-2.col-sm-2.col-xs-4.item').each((index, element) => {
-            const title = $(element).find('.grid-title a').text().trim();
-            let image = $(element).find('img').attr('src');
-            const rating = $(element).find('.rating').text().trim();
-            const movieLink = $(element).find('.grid-title a').attr('href');
-            const genres = $(element).find('.grid-categories a').map((i, el) => $(el).text()).get();
-            
-            if (image && image.startsWith('//')) {
-                image = `https:${image}`;
-            }
-            
-            popularMovies.push({
-                title,
-                image,
-                rating,
-                movieLink,
-                genres
-            });
+      const { data } = await axios.get('https://amsterdam-ftv-blog.com');
+      const $ = load(data);
+  
+      let movies = [];
+  
+      // Menyusuri elemen <div class="idmuvi-rp"> untuk mendapatkan daftar film
+      $('.idmuvi-rp ul li').each((index, element) => {
+        const movieTitle = $(element).find('.idmuvi-rp-title').text().trim();
+        const movieLink = $(element).find('a').attr('href');
+        const movieImage = $(element).find('img').attr('src');
+        const movieCategory = $(element).find('.idmuvi-rp-meta a[rel="category tag"]').map((i, el) => $(el).text()).get().join(', ');
+        const movieCountry = $(element).find('.idmuvi-rp-meta [itemtype="http://schema.org/Place"] a').text();
+  
+        movies.push({
+          title: movieTitle,
+          link: movieLink,
+          image: movieImage,
+          category: movieCategory,
+          country: movieCountry,
         });
-        
-        res.json(popularMovies);
-        
+      });
+  
+      res.json({
+        status: 'success',
+        data: movies,
+      });
     } catch (error) {
-        console.error(error);
-        res.status(500).send('Error occurred while scraping data.');
+      res.status(500).json({ status: 'error', message: error.message });
     }
-});
+  });
+  
 // MOVIE POPULAR
 
 // MOVIE HORROR
 app.get('/api/movie-horror', async (req, res) => {
-    const url = 'https://tv3.lk21official.my/genre/horror/';
-
     try {
-        // Fetch the HTML from the URL
-        const { data } = await axios.get(url);
-        const $ = load(data);
-
-        // Scrape horror movie details
-        const horrorMovies = [];
-
-        // Loop through each movie element
-        $('div.col-lg-2.col-sm-3.col-xs-4.page-0.infscroll-item').each((index, element) => {
-            const title = $(element).find('h1.grid-title a').text().trim();
-            const poster = $(element).find('img').attr('src');
-            const rating = $(element).find('div.rating').text().trim();
-            const movieLink = $(element).find('h1.grid-title a').attr('href');
-
-            // Prepend "https://" to the poster URL
-            const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
-
-            // Push the movie details to the array
-            horrorMovies.push({
-                title,
-                poster: posterUrl,
-                rating,
-                link: movieLink,
-            });
+      const url = 'https://amsterdam-ftv-blog.com/horror/';
+      const { data } = await axios.get(url);
+      const $ = load(data);
+  
+      const movies = [];
+  
+      // Lakukan scraping pada elemen article dengan ID tertentu
+      $('article.item-infinite').each((index, element) => {
+        const title = $(element).find('h2.entry-title a').text();
+        const link = $(element).find('h2.entry-title a').attr('href');
+        const image = $(element).find('img').attr('src');
+        const rating = $(element).find('.gmr-rating-item').text().trim();
+        const duration = $(element).find('.gmr-duration-item').text().trim();
+        const quality = $(element).find('.gmr-quality-item a').text().trim();
+        const releaseDate = $(element).find('time').attr('datetime');
+        const categories = [];
+  
+        $(element)
+          .find('.gmr-movie-on a')
+          .each((i, el) => {
+            categories.push($(el).text().trim());
+          });
+  
+        movies.push({
+          title,
+          link,
+          image,
+          rating,
+          duration,
+          quality,
+          releaseDate,
+          categories,
         });
-
-        // Send the movie details as the response
-        res.json(horrorMovies);
+      });
+  
+      res.json(movies);
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to fetch horror movie details' });
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
     }
-});
+  });
 // MOVIE HORROR
 
 // MOVIE DETAIL
 app.get('/api/movie-details/:movieId', async (req, res) => {
     const { movieId } = req.params;
-    const url = `https://tv3.lk21official.my/${movieId}`;
-
+    const url = `https://amsterdam-ftv-blog.com/${movieId}`;
+  
     try {
-        // Mengambil halaman
-        const { data } = await axios.get(url);
-        const $ = load(data);
-
-        // Mengambil data yang diperlukan
-        const title = $('header.post-header h2').text();
-        const iframeSrc = $('div.embed iframe').attr('src');
-        const poster = $('div.content-poster img').attr('src');
-        const quality = $('div.content h2').eq(0).next().text();
-        const country = $('div.content h2').eq(1).next().text();
-        const stars = $('div.content h2').eq(2).next().text();
-        const director = $('div.content h2').eq(3).next().text();
-        const genres = $('div.content h2').eq(4).next().text();
-        const imdbRating = $('div.content h2').eq(5).next().text();
-        const released = $('div.content h2').eq(6).next().text();
-        const translator = $('div.content h2').eq(7).next().text();
-        const synopsis = $('blockquote strong').next().text().trim();
-        const videoUrl = $('iframe').attr('src');
-        const posterUrl = poster.startsWith('http') ? poster : `https:${poster}`;
-        const duration = $('div.content h2').eq(10).next().text();
-
-        // Mengembalikan data dalam format JSON
-        res.json({
-            title,
-            iframeSrc,
-            posterUrl,
-            videoUrl,
-            quality,
-            country,
-            stars,
-            director,
-            genres,
-            imdbRating,
-            released,
-            translator,
-            synopsis,
-            duration
-        });
+      // Fetch the HTML from the provided URL
+      const { data } = await axios.get(url);
+      
+      // Load the HTML into cheerio for parsing
+      const $ = load(data);
+      
+      // Extract the required data from the HTML structure
+      const imageUrl = $('div.gmr-movie-data img').attr('src');
+      const title = $('h1.entry-title').text();
+      const ratingValue = $('span[itemprop="ratingValue"]').text();
+      const ratingCount = $('span[itemprop="ratingCount"]').text();
+      const description = $('div.entry-content p').text();
+      const director = $('div.gmr-moviedata span[itemprop="director"] span[itemprop="name"]').text();
+      const cast = $('div.gmr-moviedata span[itemprop="actors"] span[itemprop="name"]').map((i, el) => $(el).text()).get().join(', ');
+      const releaseDate = $('div.gmr-moviedata time[itemprop="dateCreated"]').attr('datetime');
+      const genre = $('div.gmr-moviedata a[rel="category tag"]').map((i, el) => $(el).text()).get().join(', ');
+      const country = $('div.gmr-moviedata span[itemprop="contentLocation"] a[rel="tag"]').map((i, el) => $(el).text()).get().join(', ');
+      const language = $('div.gmr-moviedata span[property="inLanguage"]').text();
+      const budget = $('div.gmr-moviedata:contains("Budget")').next('div').text().trim();
+      const revenue = $('div.gmr-moviedata:contains("Revenue")').next('div').text().trim();
+      const videoUrl = $('iframe').attr('src');
+  
+      // Respond with the movie details
+      res.json({
+        title,
+        imageUrl,
+        rating: {
+          value: ratingValue,
+          count: ratingCount
+        },
+        description,
+        director,
+        cast,
+        releaseDate,
+        genre,
+        country,
+        language,
+        budget,
+        revenue,
+        videoUrl
+      });
     } catch (error) {
-        console.error('Error fetching movie details:', error);
-        res.status(500).json({ error: 'Failed to fetch movie details' });
+      res.status(500).json({ error: 'Error fetching movie details' });
     }
-});
+  });
+  
 // MOVIE DETAIL
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
