@@ -275,6 +275,128 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
 // MOVIE DETAIL
 
 
+// MOVIE SEARCH
+app.get('/api/movie-search/:searchId', async (req, res) => {
+  const { searchId } = req.params;
+  const url = `https://amsterdam-ftv-blog.com/?s=${searchId}&post_type[]=post&post_type[]=tv`;
+
+  try {
+    const { data } = await axios.get(url);
+    const $ = load(data);
+
+    const movies = [];
+
+    $('article.item-infinite').each((i, element) => {
+
+      const title = $(element).find('.entry-title a').text().trim();
+      const link = $(element).find('.entry-title a').attr('href');
+      const rating = $(element).find('.gmr-rating-item').text().trim();
+      const duration = $(element).find('.gmr-duration-item').text().trim();
+      const genres = $(element)
+        .find('.gmr-movie-on a')
+        .map((i, el) => $(el).text())
+        .get()
+        .join(', ');
+      const thumbnail = $(element).find('.content-thumbnail img').attr('src');
+      const releaseDate = $(element).find('time').attr('datetime');
+      const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text().trim();
+      const trailer = $(element).find('.gmr-trailer-popup').attr('href');
+      
+      movies.push({
+        title,
+        link,
+        rating,
+        duration,
+        genres,
+        thumbnail,
+        releaseDate,
+        director,
+        trailer,
+      });
+    });
+
+    res.json(movies);
+  } catch (error) {
+    console.error('Error fetching movie data:', error);
+    res.status(500).json({ error: 'Failed to fetch movie data' });
+  }
+});
+
+//  MOVIE SEARCH
+
+// GENRES
+app.get('/api/genres', async (req, res) => {
+  try {
+    const { data } = await axios.get('https://amsterdam-ftv-blog.com/');
+    
+    const $ = load(data);
+    
+    const genres = [];
+    $('ul.sub-menu li').each((i, el) => {
+      const genreName = $(el).find('span[itemprop="name"]').text();
+      const genreUrl = $(el).find('a').attr('href');
+      
+      genres.push({ name: genreName, url: genreUrl });
+    });
+
+    res.json(genres);
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching genres', error });
+  }
+});
+
+//  GENRES
+
+//MOVIE GENRES
+app.get('/api/movie-genre/:genreId', async (req, res) => {
+  const {genreId} = req.params;
+  try {
+    const url = `https://amsterdam-ftv-blog.com/${genreId}/`;
+    const { data } = await axios.get(url);
+    const $ = load(data);
+
+    const movies = [];
+
+    $('article.item-infinite').each((index, element) => {
+      const title = $(element).find('h2.entry-title a').text();
+      const link = $(element).find('h2.entry-title a').attr('href');
+      const image = $(element).find('img').attr('src');
+      const rating = $(element).find('.gmr-rating-item').text().trim();
+      const duration = $(element).find('.gmr-duration-item').text().trim();
+      const quality = $(element).find('.gmr-quality-item a').text().trim();
+      const releaseDate = $(element).find('time').attr('datetime');
+      const categories = [];
+
+      $(element)
+        .find('.gmr-movie-on a')
+        .each((i, el) => {
+          categories.push($(el).text().trim());
+        });
+
+      movies.push({
+        title,
+        link,
+        image,
+        rating,
+        duration,
+        quality,
+        releaseDate,
+        categories,
+      });
+    });
+
+    res.json(movies);
+    // console.log(url)
+  } catch (error) {
+    console.error('Error fetching data:', error);
+    res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+//MOVIE GENRES
+
+
 app.listen(PORT, () => {
+  // MOVIE GENRE
   console.log(`Server is running on http://localhost:${PORT}`);
 });
