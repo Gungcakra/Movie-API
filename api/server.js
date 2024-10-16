@@ -12,13 +12,10 @@ app.use(cors({
 
 app.get('/api/movie-list', async (req, res) => {
   try {
-    // Ambil konten dari URL
     const { data } = await axios.get('https://amsterdam-ftv-blog.com/');
     
-    // Muat HTML dengan cheerio
     const $ = load(data);
     
-    // Seleksi elemen berdasarkan kelas dan atribut yang diberikan
     const movies = [];
     $('div.col-md-125[itemscope="itemscope"]').each((index, element) => {
       const title = $(element).find('h2.entry-title a').text();
@@ -29,7 +26,6 @@ app.get('/api/movie-list', async (req, res) => {
       const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text();
       const quality = $(element).find('div.gmr-quality-item a').text();
 
-      // Push data ke array movies
       movies.push({
         title,
         permalink,
@@ -41,7 +37,6 @@ app.get('/api/movie-list', async (req, res) => {
       });
     });
 
-    // Kirim data sebagai response JSON
     res.json({ movies });
   } catch (error) {
     console.error(error);
@@ -58,8 +53,7 @@ app.get('/api/movie-new', async (req, res) => {
       
       const $ = load(data);
       const movieList = [];
-  
-      // Looping untuk mengambil elemen <article> dengan id="post-319833"
+
       $('article.item-infinite').each((i, el) => {
         const title = $(el).find('h2.entry-title a').text().trim();
         const link = $(el).find('h2.entry-title a').attr('href');
@@ -70,7 +64,6 @@ app.get('/api/movie-new', async (req, res) => {
         const releaseDate = $(el).find('time[itemprop="dateCreated"]').attr('datetime');
         const trailer = $(el).find('a.gmr-trailer-popup').attr('href');
         
-        // Pushing data ke array movieList
         movieList.push({
           title,
           link,
@@ -100,7 +93,6 @@ app.get('/api/movie-popular', async (req, res) => {
   
       let movies = [];
   
-      // Menyusuri elemen <div class="idmuvi-rp"> untuk mendapatkan daftar film
       $('.idmuvi-rp ul li').each((index, element) => {
         const movieTitle = $(element).find('.idmuvi-rp-title').text().trim();
         const movieLink = $(element).find('a').attr('href');
@@ -137,7 +129,6 @@ app.get('/api/movie-horror', async (req, res) => {
   
       const movies = [];
   
-      // Lakukan scraping pada elemen article dengan ID tertentu
       $('article.item-infinite').each((index, element) => {
         const title = $(element).find('h2.entry-title a').text();
         const link = $(element).find('h2.entry-title a').attr('href');
@@ -183,7 +174,6 @@ app.get('/api/movie-drama', async (req, res) => {
   
       const movies = [];
   
-      // Lakukan scraping pada elemen article dengan ID tertentu
       $('article.item-infinite').each((index, element) => {
         const title = $(element).find('h2.entry-title a').text();
         const link = $(element).find('h2.entry-title a').attr('href');
@@ -226,13 +216,10 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
     const url = `https://amsterdam-ftv-blog.com/${movieId}`;
   
     try {
-      // Fetch the HTML from the provided URL
       const { data } = await axios.get(url);
       
-      // Load the HTML into cheerio for parsing
       const $ = load(data);
       
-      // Extract the required data from the HTML structure
       const imageUrl = $('div.gmr-movie-data img').attr('src');
       const title = $('h1.entry-title').text();
       const ratingValue = $('span[itemprop="ratingValue"]').text();
@@ -248,7 +235,6 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
       const revenue = $('div.gmr-moviedata:contains("Revenue")').next('div').text().trim();
       const videoUrl = $('iframe').attr('src');
   
-      // Respond with the movie details
       res.json({
         title,
         imageUrl,
