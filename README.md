@@ -85,7 +85,7 @@ https://moverse-api.vercel.app/api/$endpoint
   Retrieve a list of movies based on search query.
   
   **Example:**  
-  `https://moverse-api.vercel.app/api/movie-search/mortal-kombat`
+  `https://moverse-api.vercel.app/api/movie-search/mortal%20kombat`
 
 
 
