@@ -2,18 +2,18 @@
 
 Moverse is an API that utilizes web scraping techniques to obtain movie data
 
-## Technologies Used
+### TechStack
 - **Express.js**
 - **Cheerio**
 - **Axios**
 
 
-## Base URL
+### Base URL
 
 https://moverse-api.vercel.app/api/$endpoint
 
 
-## Endpoint List
+### Endpoint List
 
 ### 1. Movie List
 - **GET** `/movie-list`
