@@ -10,7 +10,7 @@ Moverse is an API that utilizes web scraping techniques to obtain movie data
 
 ### Base URL
 
-https://moverse-api.vercel.app/api/$endpoint
+`https://moverse-api.vercel.app/api/$endpoint`
 
 
 ### Endpoint List
