@@ -299,7 +299,10 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
         .map((i, el) => $(el).text())
         .get()
         .join(', ');
-      const thumbnail = $(element).find('.content-thumbnail img').attr('src');
+      const imageUrl = $(element).find('.content-thumbnail img').attr('src');
+      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+      const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
+      const image = largestImage;
       const releaseDate = $(element).find('time').attr('datetime');
       const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text().trim();
       const trailer = $(element).find('.gmr-trailer-popup').attr('href');
@@ -310,7 +313,7 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
         rating,
         duration,
         genres,
-        thumbnail,
+        image,
         releaseDate,
         director,
         trailer,
@@ -363,7 +366,10 @@ app.get('/api/movie-genre/:genreId', async (req, res) => {
     $('article.item-infinite').each((index, element) => {
       const title = $(element).find('h2.entry-title a').text();
       const link = $(element).find('h2.entry-title a').attr('href');
-      const image = $(element).find('img').attr('src');
+      const imageUrl = $(element).find('img').attr('src');
+      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+      const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
+      const image = largestImage;
       const rating = $(element).find('.gmr-rating-item').text().trim();
       const duration = $(element).find('.gmr-duration-item').text().trim();
       const quality = $(element).find('.gmr-quality-item a').text().trim();
