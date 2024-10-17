@@ -19,7 +19,7 @@ app.get('/api/movie-list', async (req, res) => {
     $('div.col-md-125[itemscope="itemscope"]').each((index, element) => {
       const title = $(element).find('h2.entry-title a').text();
       const permalink = $(element).find('h2.entry-title a').attr('href');
-      const imageUrl = $(element).find('img').attr('src');
+      const imageUrl = $(element).find('img').attr('srcset');
       const rating = $(element).find('div.gmr-rating-item').text().trim();
       const releaseDate = $(element).find('time').attr('datetime');
       const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text();
@@ -56,7 +56,7 @@ app.get('/api/movie-new', async (req, res) => {
       $('article.item-infinite').each((i, el) => {
         const title = $(el).find('h2.entry-title a').text().trim();
         const link = $(el).find('h2.entry-title a').attr('href');
-        const image = $(el).find('div.content-thumbnail a img').attr('src');
+        const image = $(el).find('div.content-thumbnail a img').attr('srcset');
         const rating = $(el).find('div.gmr-rating-item').text().trim();
         const duration = $(el).find('div.gmr-duration-item').text().trim();
         const genre = $(el).find('div.gmr-movie-on').text().trim();
@@ -95,7 +95,7 @@ app.get('/api/movie-popular', async (req, res) => {
       $('.idmuvi-rp ul li').each((index, element) => {
         const movieTitle = $(element).find('.idmuvi-rp-title').text().trim();
         const movieLink = $(element).find('a').attr('href');
-        const movieImage = $(element).find('img').attr('src');
+        const movieImage = $(element).find('img').attr('srcset');
         const movieCategory = $(element).find('.idmuvi-rp-meta a[rel="category tag"]').map((i, el) => $(el).text()).get().join(', ');
         const movieCountry = $(element).find('.idmuvi-rp-meta [itemtype="http://schema.org/Place"] a').text();
   
@@ -131,7 +131,7 @@ app.get('/api/movie-horror', async (req, res) => {
       $('article.item-infinite').each((index, element) => {
         const title = $(element).find('h2.entry-title a').text();
         const link = $(element).find('h2.entry-title a').attr('href');
-        const image = $(element).find('img').attr('src');
+        const image = $(element).find('img').attr('srcset');
         const rating = $(element).find('.gmr-rating-item').text().trim();
         const duration = $(element).find('.gmr-duration-item').text().trim();
         const quality = $(element).find('.gmr-quality-item a').text().trim();
@@ -176,7 +176,7 @@ app.get('/api/movie-drama', async (req, res) => {
       $('article.item-infinite').each((index, element) => {
         const title = $(element).find('h2.entry-title a').text();
         const link = $(element).find('h2.entry-title a').attr('href');
-        const image = $(element).find('img').attr('src');
+        const image = $(element).find('img').attr('srcset');
         const rating = $(element).find('.gmr-rating-item').text().trim();
         const duration = $(element).find('.gmr-duration-item').text().trim();
         const quality = $(element).find('.gmr-quality-item a').text().trim();
