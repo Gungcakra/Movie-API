@@ -329,6 +329,57 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
 
 //  MOVIE SEARCH
 
+// MOVIE INDO
+app.get('/api/movie-indo', async (req, res) => {
+  const url = `https://amsterdam-ftv-blog.com/?s=&search=advanced&post_type=movie&index=&orderby=&genre=&movieyear=&country=indonesia&quality=`;
+
+  try {
+    const { data } = await axios.get(url);
+    const $ = load(data);
+
+    const movies = [];
+
+    $('article.item-infinite').each((i, element) => {
+
+      const title = $(element).find('.entry-title a').text().trim();
+      const link = $(element).find('.entry-title a').attr('href');
+      const rating = $(element).find('.gmr-rating-item').text().trim();
+      const duration = $(element).find('.gmr-duration-item').text().trim();
+      const genres = $(element)
+        .find('.gmr-movie-on a')
+        .map((i, el) => $(el).text())
+        .get()
+        .join(', ');
+      const imageUrl = $(element).find('.content-thumbnail img').attr('src');
+      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+      const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
+      const image = largestImage;
+      const releaseDate = $(element).find('time').attr('datetime');
+      const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text().trim();
+      const trailer = $(element).find('.gmr-trailer-popup').attr('href');
+      
+      movies.push({
+        title,
+        link,
+        rating,
+        duration,
+        genres,
+        image,
+        releaseDate,
+        director,
+        trailer,
+      });
+    });
+
+    res.json(movies);
+  } catch (error) {
+    console.error('Error fetching movie data:', error);
+    res.status(500).json({ error: 'Failed to fetch movie data' });
+  }
+});
+
+//  MOVIE INDO
+
 // GENRES
 app.get('/api/genres', async (req, res) => {
   try {
