@@ -5,9 +5,8 @@ import { load } from 'cheerio';
 import cors from 'cors';
 const app = express();
 const PORT = 3000;
-app.use(cors({
-    origin:"http://localhost:3000"
-}));
+app.use(cors());
+
 
 
 app.get('/api/movie-list', async (req, res) => {
@@ -349,7 +348,7 @@ app.get('/api/genres', async (req, res) => {
 //  GENRES
 
 //MOVIE GENRES
-app.get('/api/movie-genre/:genreId', async (req, res) => {
+app.get('/api/movie-genre/:genreId', async (req, res) => {  
   const {genreId} = req.params;
   try {
     const url = `https://amsterdam-ftv-blog.com/${genreId}/`;
