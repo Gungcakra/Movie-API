@@ -1,6 +1,6 @@
-# Moverse API
+# Movie API
 
-Moverse is an API that utilizes web scraping techniques to obtain movie data
+An API that utilizes web scraping techniques to obtain movie data
 
 ### TechStack
 - **Express.js**
