@@ -133,7 +133,7 @@ app.get('/api/movie-popular', async (req, res) => {
 // MOVIE HORROR
 app.get('/api/movie-horror', async (req, res) => {
     try {
-      const url = 'http://217.76.58.90/horror/';
+      const url = 'https://www.sweetteagrille.com/';
       const { data } = await axios.get(url);
       const $ = load(data);
   
