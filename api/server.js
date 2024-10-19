@@ -133,7 +133,7 @@ app.get('/api/movie-popular', async (req, res) => {
 // MOVIE HORROR
 app.get('/api/movie-horror', async (req, res) => {
     try {
-      const url = 'https://143.198.206.38/category/horror/';
+      const url = 'https://143.198.206.38/category/horor/';
       const { data } = await axios.get(url);
       const $ = load(data);
   
