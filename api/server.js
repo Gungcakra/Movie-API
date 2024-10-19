@@ -11,7 +11,7 @@ app.use(cors());
 
 app.get('/api/movie-list', async (req, res) => {
   try {
-    const { data } = await axios.get('https://www.wealdaviation.com/');
+    const { data } = await axios.get('https://143.198.206.38/');
     
     const $ = load(data);
     
@@ -52,7 +52,7 @@ app.get('/api/movie-list', async (req, res) => {
 // MOVIE NEW
 app.get('/api/movie-new', async (req, res) => {
     try {
-      const url = 'https://www.wealdaviation.com/?s=&search=advanced&post_type=&index=&orderby=&genre=&movieyear=2024&country=&quality=';
+      const url = 'https://143.198.206.38/?s=&search=advanced&post_type=&index=&orderby=&genre=&movieyear=2024&country=&quality=';
       const { data } = await axios.get(url);
       
       const $ = load(data);
@@ -95,7 +95,7 @@ app.get('/api/movie-new', async (req, res) => {
 // MOVIE POPULAR
 app.get('/api/movie-popular', async (req, res) => {
     try {
-      const { data } = await axios.get('https://www.wealdaviation.com/');
+      const { data } = await axios.get('https://143.198.206.38/');
       const $ = load(data);
   
       let movies = [];
@@ -133,7 +133,7 @@ app.get('/api/movie-popular', async (req, res) => {
 // MOVIE HORROR
 app.get('/api/movie-horror', async (req, res) => {
     try {
-      const url = 'https://www.wealdaviation.com/horror/';
+      const url = 'https://143.198.206.38/horror/';
       const { data } = await axios.get(url);
       const $ = load(data);
   
@@ -181,7 +181,7 @@ app.get('/api/movie-horror', async (req, res) => {
 // MOVIE DRAMA
 app.get('/api/movie-drama', async (req, res) => {
     try {
-      const url = 'https://www.wealdaviation.com/drama/';
+      const url = 'https://143.198.206.38/drama/';
       const { data } = await axios.get(url);
       const $ = load(data);
   
@@ -229,7 +229,7 @@ app.get('/api/movie-drama', async (req, res) => {
 // MOVIE DETAIL
 app.get('/api/movie-details/:movieId', async (req, res) => {
     const { movieId } = req.params;
-    const url = `https://www.wealdaviation.com/${movieId}`;
+    const url = `https://143.198.206.38/${movieId}`;
   
     try {
       const { data } = await axios.get(url);
@@ -280,7 +280,7 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
 // MOVIE SEARCH
 app.get('/api/movie-search/:searchId', async (req, res) => {
   const { searchId } = req.params;
-  const url = `https://www.wealdaviation.com/?s=${searchId}&post_type[]=post&post_type[]=tv`;
+  const url = `https://143.198.206.38/?s=${searchId}&post_type[]=post&post_type[]=tv`;
 
   try {
     const { data } = await axios.get(url);
@@ -331,7 +331,7 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
 
 // MOVIE INDO
 app.get('/api/movie-indo', async (req, res) => {
-  const url = `https://www.wealdaviation.com/?s=&search=advanced&post_type=movie&index=&orderby=&genre=&movieyear=&country=indonesia&quality=`;
+  const url = `https://143.198.206.38/?s=&search=advanced&post_type=movie&index=&orderby=&genre=&movieyear=&country=indonesia&quality=`;
 
   try {
     const { data } = await axios.get(url);
@@ -383,7 +383,7 @@ app.get('/api/movie-indo', async (req, res) => {
 // GENRES
 app.get('/api/genres', async (req, res) => {
   try {
-    const { data } = await axios.get('https://www.wealdaviation.com/');
+    const { data } = await axios.get('https://143.198.206.38/');
     
     const $ = load(data);
     
@@ -408,7 +408,7 @@ app.get('/api/genres', async (req, res) => {
 app.get('/api/movie-genre/:genreId', async (req, res) => {  
   const {genreId} = req.params;
   try {
-    const url = `https://www.wealdaviation.com/${genreId}/`;
+    const url = `https://143.198.206.38/${genreId}/`;
     const { data } = await axios.get(url);
     const $ = load(data);
 
