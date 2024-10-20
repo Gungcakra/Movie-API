@@ -277,51 +277,66 @@ app.get('/api/movie-korea', async (req, res) => {
 
 // MOVIE DETAIL
 app.get('/api/movie-details/:movieId', async (req, res) => {
-    const { movieId } = req.params;
-    const url = `https://www.sweetteagrille.com/${movieId}`;
-  
-    try {
-      const { data } = await axios.get(url);
-      
-      const $ = load(data);
-      
-      const imageUrl = $('div.gmr-movie-data img').attr('src');
-      const title = $('h1.entry-title').text();
-      const ratingValue = $('span[itemprop="ratingValue"]').text();
-      const ratingCount = $('span[itemprop="ratingCount"]').text();
-      const description = $('div.entry-content p').text();
-      const director = $('div.gmr-moviedata span[itemprop="director"] span[itemprop="name"]').text();
-      const cast = $('div.gmr-moviedata span[itemprop="actors"] span[itemprop="name"]').map((i, el) => $(el).text()).get().join(', ');
-      const releaseDate = $('div.gmr-moviedata time[itemprop="dateCreated"]').attr('datetime');
-      const genre = $('div.gmr-moviedata a[rel="category tag"]').map((i, el) => $(el).text()).get().join(', ');
-      const country = $('div.gmr-moviedata span[itemprop="contentLocation"] a[rel="tag"]').map((i, el) => $(el).text()).get().join(', ');
-      const language = $('div.gmr-moviedata span[property="inLanguage"]').text();
-      const budget = $('div.gmr-moviedata:contains("Budget")').next('div').text().trim();
-      const revenue = $('div.gmr-moviedata:contains("Revenue")').next('div').text().trim();
-      const videoUrl = $('iframe').attr('src');
-  
-      res.json({
-        title,
-        imageUrl,
-        rating: {
-          value: ratingValue,
-          count: ratingCount
-        },
-        description,
-        director,
-        cast,
-        releaseDate,
-        genre,
-        country,
-        language,
-        budget,
-        revenue,
-        videoUrl
-      });
-    } catch (error) {
-      res.status(500).json({ error: 'Error fetching movie details' });
-    }
-  });
+  const { movieId } = req.params;
+  const url = `https://www.sweetteagrille.com/${movieId}`;
+
+  try {
+    const { data } = await axios.get(url);
+    const $ = load(data);
+
+    const imageUrl = $('div.gmr-movie-data img').attr('src');
+    const title = $('h1.entry-title').text();
+    const ratingValue = $('span[itemprop="ratingValue"]').text();
+    const ratingCount = $('span[itemprop="ratingCount"]').text();
+    const description = $('div.entry-content p').text();
+    const director = $('div.gmr-moviedata span[itemprop="director"] span[itemprop="name"]').text();
+    const cast = $('div.gmr-moviedata span[itemprop="actors"] span[itemprop="name"]').map((i, el) => $(el).text()).get().join(', ');
+    const releaseDate = $('div.gmr-moviedata time[itemprop="dateCreated"]').attr('datetime');
+    
+    // Filter genre to exclude any numeric values like '2024'
+    const genre = $('div.gmr-moviedata a[rel="category tag"]').map((i, el) => $(el).text()).get()
+      .filter((g) => !/^\d+$/.test(g))  // Exclude strings that contain only numbers
+      .join(', ');
+
+    const country = $('div.gmr-moviedata span[itemprop="contentLocation"] a[rel="tag"]').map((i, el) => $(el).text()).get().join(', ');
+    const language = $('div.gmr-moviedata span[property="inLanguage"]').text();
+
+    const budget = $('div.gmr-moviedata:contains("Budget")').next('div').text().trim();
+    const revenue = $('div.gmr-moviedata:contains("Revenue")').next('div').text().trim();
+    
+    const videoUrl = $('iframe').attr('src');
+    
+    // New elements
+    const tagline = $('div.gmr-moviedata:contains("Tagline")').next('div').text().trim();
+    const views = $('div.gmr-movie-view strong:contains("Views")').next().text().trim();
+    const duration = $('div.gmr-moviedata:contains("Duration") span[property="duration"]').text().trim();
+
+    res.json({
+      title,
+      imageUrl,
+      rating: {
+        value: ratingValue,
+        count: ratingCount
+      },
+      description,
+      director,
+      cast,
+      releaseDate,
+      genre,
+      country,
+      language,
+      budget,
+      revenue,
+      videoUrl,
+      tagline,
+      views,
+      duration
+    });
+  } catch (error) {
+    res.status(500).json({ error: 'Error fetching movie details' });
+  }
+});
+
   
 // MOVIE DETAIL
 
