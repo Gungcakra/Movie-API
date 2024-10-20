@@ -283,8 +283,18 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
   try {
     const { data } = await axios.get(url);
     const $ = load(data);
-
-    const imageUrl = $('div.gmr-movie-data img').attr('src');
+    const image = $('img.wp-post-image').attr('srcset');
+    const imageUrl = image ? (() => {
+        const srcsetArray = image.split(',').map(item => {
+            const [url, size] = item.trim().split(' ');
+            return { url, size: parseInt(size.replace('w', '')) };
+        });
+        
+        const largestImage = srcsetArray.sort((a, b) => b.size - a.size)[0];
+        
+        return largestImage.url; 
+    })() : null;
+    
     const title = $('h1.entry-title').text();
     const ratingValue = $('span[itemprop="ratingValue"]').text();
     const ratingCount = $('span[itemprop="ratingCount"]').text();
@@ -336,6 +346,7 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
     res.status(500).json({ error: 'Error fetching movie details' });
   }
 });
+
 
   
 // MOVIE DETAIL
