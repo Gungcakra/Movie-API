@@ -11,43 +11,62 @@ app.use(cors());
 
 app.get('/api/movie-list', async (req, res) => {
   try {
-    const { data } = await axios.get('https://www.sweetteagrille.com/');
-    
-    const $ = load(data);
-    
-    const movies = [];
-    $('div.col-md-125[itemscope="itemscope"]').each((index, element) => {
-      const title = $(element).find('h2.entry-title a').text();
-      const permalink = $(element).find('h2.entry-title a').attr('href');
-      const imageUrl = $(element).find('img').attr('srcset');
+      const urls = [
+          'https://www.sweetteagrille.com/judul/',
+          'https://www.sweetteagrille.com/judul/page/3/',
+          'https://www.sweetteagrille.com/judul/page/5/',
+          'https://www.sweetteagrille.com/judul/page/7/',
+          'https://www.sweetteagrille.com/judul/page/9/',
+          'https://www.sweetteagrille.com/judul/page/11/',
+      ];
 
-      const srcsetArray = imageUrl.split(',').map(item => item.trim());
-      const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
-      const image = largestImage;
-   
-      const rating = $(element).find('div.gmr-rating-item').text().trim();
-      const releaseDate = $(element).find('time').attr('datetime');
-      const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text();
-      const quality = $(element).find('div.gmr-quality-item a').text();
+      const movies = [];
 
-      movies.push({
-        title,
-        permalink,
-        image,
-        rating,
-        releaseDate,
-        director,
-        quality
-      });
-    });
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
 
-    res.json({ movies });
+          $('article.item-infinite').each((index, element) => {
+              const title = $(element).find('h2.entry-title a').text();
+              const link = $(element).find('h2.entry-title a').attr('href');
+
+              // Pengecekan untuk menghindari link yang mengandung '/tv/'
+              if (link && !link.includes('/tv/')) {
+                  const imageUrl = $(element).find('img').attr('srcset');
+                  const image = imageUrl ? (() => {
+                      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+                      return srcsetArray[srcsetArray.length - 1].split(' ')[0];
+                  })() : null;
+                  const rating = $(element).find('.gmr-rating-item').text().trim();
+                  const duration = $(element).find('.gmr-duration-item').text().trim();
+                  const quality = $(element).find('.gmr-quality-item a').text().trim();
+                  const releaseDate = $(element).find('time').attr('datetime');
+                  const categories = [];
+
+                  $(element).find('.gmr-movie-on a').each((i, el) => {
+                      categories.push($(el).text().trim());
+                  });
+
+                  movies.push({
+                      title,
+                      link,
+                      image,
+                      rating,
+                      duration,
+                      quality,
+                      releaseDate,
+                      categories,
+                  });
+              }
+          });
+      }
+
+      res.json(movies);
   } catch (error) {
-    console.error(error);
-    res.status(500).send('Error occurred while fetching data');
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
-
 
 // MOVIE NEW
 app.get('/api/movie-new', async (req, res) => {
@@ -275,6 +294,201 @@ app.get('/api/movie-korea', async (req, res) => {
   });
 // MOVIE ROMANCE
 
+// MOVIE RATING
+app.get('/api/movie-rating', async (req, res) => {
+  try {
+      const urls = [
+          'https://www.sweetteagrille.com/rating/',
+          'https://www.sweetteagrille.com/rating/page/3/'
+      ];
+
+      const movies = [];
+
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
+
+          $('article[itemtype="https://schema.org/Movie"]').each((index, element) => {
+              const title = $(element).find('.entry-title a').text();
+              const url = $(element).find('.entry-title a').attr('href');
+              const imageSrcset = $(element).find('img').attr('srcset').split(', ');
+              const largestImage = imageSrcset[imageSrcset.length - 1].split(' ')[0]; // Ambil ukuran terbesar
+              const rating = $(element).find('.gmr-rating-item').text().trim();
+
+              movies.push({
+                  title,
+                  url,
+                  image: largestImage,
+                  rating,
+              });
+          });
+      }
+
+      res.json(movies);
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch movie ratings' });
+  }
+});
+// MOVIE RATING
+
+// MOVIE WEST
+app.get('/api/movie-west', async (req, res) => {
+  try {
+      const urls = [
+          'https://www.sweetteagrille.com/west-series/',
+          'https://www.sweetteagrille.com/west-series/page/2/'
+      ];
+
+      const movies = [];
+
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
+
+          $('article[itemtype="https://schema.org/Movie"]').each((index, element) => {
+              const title = $(element).find('.entry-title a').text();
+              const url = $(element).find('.entry-title a').attr('href');
+              const imageSrcset = $(element).find('img').attr('srcset').split(', ');
+              const largestImage = imageSrcset[imageSrcset.length - 1].split(' ')[0]; // Ambil ukuran terbesar
+              const rating = $(element).find('.gmr-rating-item').text().trim();
+
+              movies.push({
+                  title,
+                  url,
+                  image: largestImage,
+                  rating,
+              });
+          });
+      }
+
+      res.json(movies);
+  } catch (error) {
+      res.status(500).json({ error: 'Failed to fetch movie ratings' });
+  }
+});
+// MOVIE WEST
+
+// DRAMA KOREA
+app.get('/api/drama-korea', async (req, res) => {
+  try {
+      const urls = [
+          'https://www.sweetteagrille.com/nonton-drama-korea/',
+          'https://www.sweetteagrille.com/nonton-drama-korea/page/2/'
+      ];
+
+      const movies = [];
+
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
+
+          $('article.item-infinite').each((index, element) => {
+              const title = $(element).find('h2.entry-title a').text();
+              const link = $(element).find('h2.entry-title a').attr('href');
+              const imageUrl = $(element).find('img').attr('srcset');
+              const image = imageUrl ? (() => {
+                  const srcsetArray = imageUrl.split(',').map(item => item.trim());
+                  return srcsetArray[srcsetArray.length - 1].split(' ')[0];
+              })() : null;
+              const rating = $(element).find('.gmr-rating-item').text().trim();
+              const duration = $(element).find('.gmr-duration-item').text().trim();
+              const quality = $(element).find('.gmr-quality-item a').text().trim();
+              const releaseDate = $(element).find('time').attr('datetime');
+              const categories = [];
+
+              $(element).find('.gmr-movie-on a').each((i, el) => {
+                  categories.push($(el).text().trim());
+              });
+
+              movies.push({
+                  title,
+                  link,
+                  image,
+                  rating,
+                  duration,
+                  quality,
+                  releaseDate,
+                  categories,
+              });
+          });
+      }
+
+      res.json(movies);
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+
+// DRAMA KOREA
+
+
+
+
+
+// MOVIE ACTION
+
+app.get('/api/movie-action', async (req, res) => {
+  try {
+      const url = 'https://www.sweetteagrille.com/film-action-terbaru/page/2/';
+      const { data } = await axios.get(url);
+      const $ = load(data);
+
+      const movies = [];
+
+      $('article.item-infinite').each((index, element) => {
+          const movie = {};
+
+          // Get title and URL
+          const titleElement = $(element).find('h2.entry-title a');
+          movie.title = titleElement.text().trim();
+          movie.url = titleElement.attr('href');
+
+          const imageElement = $(element).find('div.content-thumbnail img');
+          const srcset = imageElement.attr('srcset');
+          
+          if (srcset) {
+            // Split the srcset into an array and pick the last (largest) image
+            const srcsetArray = srcset.split(',').map(item => item.trim());
+            const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
+            movie.image = largestImage;
+          } else {
+            // Fallback to the default 'src' if 'srcset' is not available
+            movie.image = imageElement.attr('src');
+          }
+          
+
+          // Get rating
+          const ratingElement = $(element).find('div.gmr-rating-item span');
+          movie.rating = ratingElement.text().trim();
+
+          // Get duration
+          const durationElement = $(element).find('div.gmr-duration-item svg').parent().text().trim();
+          movie.duration = durationElement;
+
+          // Get release date
+          const releaseDateElement = $(element).find('time[itemprop="dateCreated"]');
+          movie.releaseDate = releaseDateElement.attr('datetime');
+
+          // Get director
+          const directorElement = $(element).find('span[itemprop="director"] span[itemprop="name"] a');
+          movie.director = directorElement.text().trim();
+
+          // Add the movie object to the list
+          movies.push(movie);
+      });
+
+      res.json(movies);
+  } catch (error) {
+      console.error('Error fetching movie data:', error);
+      res.status(500).send('An error occurred while fetching movie data.');
+  }
+});
+
+// MOVIE ACTION
+
+
+
 // MOVIE DETAIL
 app.get('/api/movie-details/:movieId', async (req, res) => {
   const { movieId } = req.params;
@@ -336,7 +550,7 @@ app.get('/api/movie-details/:movieId', async (req, res) => {
       duration
     });
   } catch (error) {
-    console.error(error); 
+    console.error(error); // Log the error for debugging
     res.status(500).json({ error: 'Error fetching movie details' });
   }
 });
@@ -358,7 +572,6 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
     const movies = [];
 
     $('article.item-infinite').each((i, element) => {
-
       const title = $(element).find('.entry-title a').text().trim();
       const link = $(element).find('.entry-title a').attr('href');
       const rating = $(element).find('.gmr-rating-item').text().trim();
@@ -368,24 +581,28 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
         .map((i, el) => $(el).text())
         .get()
         .join(', ');
+        
       const imageUrl = $(element).find('.content-thumbnail img').attr('srcset');
-      const srcsetArray = imageUrl.split(',').map(item => item.trim());
-      const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
-      const image = largestImage;
+      let image = '';
+      if (imageUrl) {
+        const srcsetArray = imageUrl.split(',').map(item => item.trim());
+        image = srcsetArray[srcsetArray.length - 1].split(' ')[0];
+      }
+
       const releaseDate = $(element).find('time').attr('datetime');
       const director = $(element).find('span[itemprop="director"] span[itemprop="name"] a').text().trim();
       const trailer = $(element).find('.gmr-trailer-popup').attr('href');
-      
+
       movies.push({
         title,
         link,
-        rating,
-        duration,
-        genres,
-        image,
-        releaseDate,
-        director,
-        trailer,
+        rating: rating || 'N/A',
+        duration: duration || 'N/A',
+        genres: genres || 'N/A',
+        image: image || 'N/A',
+        releaseDate: releaseDate || 'N/A',
+        director: director || 'N/A',
+        trailer: trailer || 'N/A',
       });
     });
 
@@ -395,6 +612,7 @@ app.get('/api/movie-search/:searchId', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch movie data' });
   }
 });
+
 
 //  MOVIE SEARCH
 
