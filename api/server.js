@@ -245,7 +245,7 @@ app.get('/api/movie-romance', async (req, res) => {
   });
 // MOVIE ROMANCE
 
-// MOVIE ROMANCE
+// MOVIE KOREA
 app.get('/api/movie-korea', async (req, res) => {
     try {
       const url = 'https://www.sweetteagrille.com/nonton-drama-korea/';
@@ -292,7 +292,7 @@ app.get('/api/movie-korea', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch data' });
     }
   });
-// MOVIE ROMANCE
+// MOVIE KOREA
 
 // MOVIE RATING
 app.get('/api/movie-rating', async (req, res) => {
@@ -426,6 +426,133 @@ app.get('/api/drama-korea', async (req, res) => {
 
 
 
+// MOVIE ANIM
+app.get('/api/movie-anim', async (req, res) => {
+  try {
+      const urls = [
+          'https://www.mattfishwick.net/genre/animation/',
+          'https://www.mattfishwick.net/genre/animation/page/2/',
+          'https://www.mattfishwick.net/genre/animation/page/3/',
+          'https://www.mattfishwick.net/genre/animation/page/4/',
+          'https://www.mattfishwick.net/genre/animation/page/5/',
+      ];
+
+      const movies = [];
+
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
+
+          $('article.item-infinite').each((index, element) => {
+              const title = $(element).find('h2.entry-title a').text();
+              const link = $(element).find('h2.entry-title a').attr('href');
+
+              // Pengecekan untuk menghindari link yang mengandung '/tv/'
+              if (link && !link.includes('/tv/')) {
+                  const imageUrl = $(element).find('img').attr('srcset');
+                  const image = imageUrl ? (() => {
+                      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+                      return srcsetArray[srcsetArray.length - 1].split(' ')[0];
+                  })() : null;
+                  const rating = $(element).find('.gmr-rating-item').text().trim();
+                  const duration = $(element).find('.gmr-duration-item').text().trim();
+                  const quality = $(element).find('.gmr-quality-item a').text().trim();
+                  const releaseDate = $(element).find('time').attr('datetime');
+                  const categories = [];
+
+                  $(element).find('.gmr-movie-on a').each((i, el) => {
+                      categories.push($(el).text().trim());
+                  });
+
+                  movies.push({
+                      title,
+                      link,
+                      image,
+                      rating,
+                      duration,
+                      quality,
+                      releaseDate,
+                      categories,
+                  });
+              }
+          });
+      }
+
+      res.json(movies);
+  } catch (error) {
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
+  }
+});
+// MOVIE ANIM
+
+// MOVIE ANIM
+app.get('/api/anim-details/:animId', async (req, res) => {
+  const { animId } = req.params;
+  const url = `https://www.mattfishwick.net/${animId}`;
+
+  try {
+    const { data } = await axios.get(url);
+    const $ = load(data);
+
+    // Optimize image fetching
+    const imageUrl = $('img.wp-post-image')
+      .attr('srcset')
+      ?.split(',')
+      .map(item => {
+        const [url, size] = item.trim().split(' ');
+        return { url, size: parseInt(size.replace('w', '')) };
+      })
+      .sort((a, b) => b.size - a.size)[0]?.url || null;
+
+    const title = $('h1.entry-title').text();
+    const ratingValue = $('span[itemprop="ratingValue"]').text();
+    const ratingCount = $('span[itemprop="ratingCount"]').text();
+    const description = $('div.entry-content p').text();
+    
+    const director = $('div.gmr-moviedata span[itemprop="director"] span[itemprop="name"]').text();
+    
+    const cast = $('div.gmr-moviedata span[itemprop="actors"] span[itemprop="name"]').map((i, el) => $(el).text()).get().join(', ');
+    
+    const releaseDate = $('div.gmr-moviedata time[itemprop="dateCreated"]').attr('datetime');
+    
+    const genre = $('div.gmr-moviedata a[rel="category tag"]').map((i, el) => {
+      const genreText = $(el).text().trim();
+      return genreText && isNaN(genreText) ? genreText : null;
+    }).get().filter(Boolean).join(', ');
+
+    const country = $('div.gmr-moviedata span[itemprop="contentLocation"] a[rel="tag"]').map((i, el) => $(el).text()).get().join(', ');
+    const language = $('div.gmr-moviedata span[property="inLanguage"]').text();
+    
+    const videoUrl = $('iframe').attr('src');
+    const views = $('div.gmr-movie-view strong:contains("Views")').next().text().trim();
+    const duration = $('div.gmr-moviedata:contains("Duration") span[property="duration"]').text().trim();
+
+    res.json({
+      title,
+      imageUrl,
+      rating: {
+        value: ratingValue,
+        count: ratingCount
+      },
+      description,
+      director,
+      cast,
+      releaseDate,
+      genre,
+      country,
+      language,
+      videoUrl,
+      views,
+      duration
+    });
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ error: 'Error fetching movie details' });
+  }
+});
+// MOVIE ANIM
+
 // MOVIE ACTION
 app.get('/api/movie-action', async (req, res) => {
   try {
@@ -483,9 +610,6 @@ app.get('/api/movie-action', async (req, res) => {
       res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
-
-
-
 // MOVIE ACTION
 
 
