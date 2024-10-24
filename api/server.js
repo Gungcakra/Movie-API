@@ -12,12 +12,12 @@ app.use(cors());
 app.get('/api/movie-list', async (req, res) => {
   try {
       const urls = [
-          'https://www.sweetteagrille.com/judul/',
-          'https://www.sweetteagrille.com/judul/page/3/',
-          'https://www.sweetteagrille.com/judul/page/5/',
-          'https://www.sweetteagrille.com/judul/page/7/',
-          'https://www.sweetteagrille.com/judul/page/9/',
-          'https://www.sweetteagrille.com/judul/page/11/',
+          'https://www.sweetteagrille.com/',
+          'https://www.sweetteagrille.com/page/3/',
+          'https://www.sweetteagrille.com/page/5/',
+          'https://www.sweetteagrille.com/page/7/',
+          'https://www.sweetteagrille.com/page/9/',
+          'https://www.sweetteagrille.com/page/11/',
       ];
 
       const movies = [];
@@ -427,63 +427,64 @@ app.get('/api/drama-korea', async (req, res) => {
 
 
 // MOVIE ACTION
-
 app.get('/api/movie-action', async (req, res) => {
   try {
-      const url = 'https://www.sweetteagrille.com/film-action-terbaru/page/2/';
-      const { data } = await axios.get(url);
-      const $ = load(data);
+      const urls = [
+          'https://www.sweetteagrille.com/film-action-terbaru/',
+          'https://www.sweetteagrille.com/page/4/',
+          'https://www.sweetteagrille.com/page/7/',
+          'https://www.sweetteagrille.com/page/11/',
+      ];
 
       const movies = [];
 
-      $('article.item-infinite').each((index, element) => {
-          const movie = {};
+      for (const url of urls) {
+          const { data } = await axios.get(url);
+          const $ = load(data);
 
-          // Get title and URL
-          const titleElement = $(element).find('h2.entry-title a');
-          movie.title = titleElement.text().trim();
-          movie.url = titleElement.attr('href');
+          $('article.item-infinite').each((index, element) => {
+              const title = $(element).find('h2.entry-title a').text();
+              const link = $(element).find('h2.entry-title a').attr('href');
 
-          const imageElement = $(element).find('div.content-thumbnail img');
-          const srcset = imageElement.attr('srcset');
-          
-          if (srcset) {
-            // Split the srcset into an array and pick the last (largest) image
-            const srcsetArray = srcset.split(',').map(item => item.trim());
-            const largestImage = srcsetArray[srcsetArray.length - 1].split(' ')[0];
-            movie.image = largestImage;
-          } else {
-            // Fallback to the default 'src' if 'srcset' is not available
-            movie.image = imageElement.attr('src');
-          }
-          
+              // Pengecekan untuk menghindari link yang mengandung '/tv/'
+              if (link && !link.includes('/tv/')) {
+                  const imageUrl = $(element).find('img').attr('srcset');
+                  const image = imageUrl ? (() => {
+                      const srcsetArray = imageUrl.split(',').map(item => item.trim());
+                      return srcsetArray[srcsetArray.length - 1].split(' ')[0];
+                  })() : null;
+                  const rating = $(element).find('.gmr-rating-item').text().trim();
+                  const duration = $(element).find('.gmr-duration-item').text().trim();
+                  const quality = $(element).find('.gmr-quality-item a').text().trim();
+                  const releaseDate = $(element).find('time').attr('datetime');
+                  const categories = [];
 
-          // Get rating
-          const ratingElement = $(element).find('div.gmr-rating-item span');
-          movie.rating = ratingElement.text().trim();
+                  $(element).find('.gmr-movie-on a').each((i, el) => {
+                      categories.push($(el).text().trim());
+                  });
 
-          // Get duration
-          const durationElement = $(element).find('div.gmr-duration-item svg').parent().text().trim();
-          movie.duration = durationElement;
-
-          // Get release date
-          const releaseDateElement = $(element).find('time[itemprop="dateCreated"]');
-          movie.releaseDate = releaseDateElement.attr('datetime');
-
-          // Get director
-          const directorElement = $(element).find('span[itemprop="director"] span[itemprop="name"] a');
-          movie.director = directorElement.text().trim();
-
-          // Add the movie object to the list
-          movies.push(movie);
-      });
+                  movies.push({
+                      title,
+                      link,
+                      image,
+                      rating,
+                      duration,
+                      quality,
+                      releaseDate,
+                      categories,
+                  });
+              }
+          });
+      }
 
       res.json(movies);
   } catch (error) {
-      console.error('Error fetching movie data:', error);
-      res.status(500).send('An error occurred while fetching movie data.');
+      console.error('Error fetching data:', error);
+      res.status(500).json({ error: 'Failed to fetch data' });
   }
 });
+
+
 
 // MOVIE ACTION
 
